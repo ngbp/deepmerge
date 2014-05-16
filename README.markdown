@@ -32,7 +32,7 @@ methods
 
 var merge = require('deepmerge')
 
-merge(x, y)
+merge(x, y, allowOverwrite)
 -----------
 
 Merge two objects `x` and `y` deeply, returning a new merged object with the
@@ -45,19 +45,44 @@ The merge is immutable, so neither `x` nor `y` will be modified.
 
 The merge will also merge arrays and array values.
 
+If `y` has objects whose key have a prefix of `^`, the merge will overwrite the value for
+the same key in `x`, rather than merging the values.  For example:
+
+```js
+var y = [
+    { "^key1": { "subkey": "two" }},
+    { "key2": { "subkey": "three" }}
+];
+
+var x = [
+    { "key1": { "subkey1": "one", "subkey2": "two" }}
+]
+```
+
+running `merge(x, y)` will actually produce the following, completely overwriting `x.key1`
+
+```js
+var merged = [
+    { "key1": { "subkey": "two" }},
+    { "key2": { "subkey": "three" }}
+]
+```
+
+You must explicitly pass `false` as the 3rd parameter to the `merge` method to prevent such overwrites.
+
 install
 =======
 
 With [npm](http://npmjs.org) do:
 
 ```
-npm install deepmerge
+npm install <TBC>
 ```
 
 For the browser, you can install with [bower](http://bower.io/):
 
 ```
-bower install deepmerge
+bower install <TBC>
 ```
 
 test

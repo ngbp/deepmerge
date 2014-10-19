@@ -8,9 +8,10 @@
     }
 }(this, function () {
 
-return function deepmerge(target, src) {
+return function deepmerge(target, src, allowOverwrite) {
     var array = Array.isArray(src);
     var dst = array && [] || {};
+    allowOverwrite = allowOverwrite !== false;
 
     if (array) {
         target = target || [];
@@ -19,7 +20,7 @@ return function deepmerge(target, src) {
             if (typeof dst[i] === 'undefined') {
                 dst[i] = e;
             } else if (typeof e === 'object') {
-                dst[i] = deepmerge(target[i], e);
+                dst[i] = deepmerge(target[i], e, allowOverwrite);
             } else {
                 if (target.indexOf(e) === -1) {
                     dst.push(e);
@@ -33,14 +34,17 @@ return function deepmerge(target, src) {
             })
         }
         Object.keys(src).forEach(function (key) {
-            if (typeof src[key] !== 'object' || !src[key]) {
+            if(allowOverwrite && key.indexOf('^') === 0) {
+                dst[key.substr(1)] = src[key];
+            }
+            else if (typeof src[key] !== 'object' || !src[key]) {
                 dst[key] = src[key];
             }
             else {
                 if (!target[key]) {
                     dst[key] = src[key];
                 } else {
-                    dst[key] = deepmerge(target[key], src[key]);
+                    dst[key] = deepmerge(target[key], src[key], allowOverwrite);
                 }
             }
         });

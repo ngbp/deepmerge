@@ -220,3 +220,104 @@ test('should work on arrays of nested objects', function(t) {
     t.deepEqual(merge(target, src), expected)
     t.end()
 })
+
+test('should overwrite when allowOverwrite is undefined', function(t) {
+    var target = [
+        { key1: { subkey1: 'one', subkey2: 'two' }}
+    ]
+
+    var src = [
+        { '^key1': { subkey: 'two' }},
+        { key2: { subkey: 'three' }}
+    ]
+
+    var expected = [
+        { key1: { subkey: 'two' }},
+        { key2: { subkey: 'three' }}
+    ]
+
+    t.deepEqual(merge(target, src), expected)
+    t.end()
+})
+
+test('should drop the ^ prefix if there is no matched key to overwrite', function(t) {
+    var target = [
+        { key1: { subkey1: 'one', subkey2: 'two' }}
+    ]
+
+    var src = [
+        { '^key3': { subkey: 'four' }}
+    ]
+
+    var expected = [
+        { key1: { subkey1: 'one', subkey2: 'two' }, key3: { subkey: 'four' }},
+    ]
+
+    t.deepEqual(merge(target, src), expected)
+    t.end()
+})
+
+test('should overwrite object with integer', function(t) {
+    var target = [
+        { key1: { subkey1: 'one', subkey2: 'two' }}
+    ]
+
+    var src = [
+        { '^key1': 1 },
+        { key2: { subkey: 'three' }}
+    ]
+
+    var expected = [
+        { key1: 1 },
+        { key2: { subkey: 'three' }}
+    ]
+
+    t.deepEqual(merge(target, src), expected)
+    t.end()
+})
+
+test('should overwrite after another overwrite', function(t) {
+    var target = [
+        { key1: { subkey1: 'one', subkey2: 'two' }}
+    ]
+
+    var src1 = [
+        { '^key1': 1 },
+        { key2: { subkey: 'three' }}
+    ]
+
+    var src2 = [
+        { '^key1': { subkey: 'four' } },
+        { key2: { subkey: 'three' }}
+    ]
+
+    var expected = [
+        { key1: { subkey: 'four' } },
+        { key2: { subkey: 'three' }}
+    ]
+
+    var firstMerge = merge(target, src1);
+    var secondMerge = merge(firstMerge, src2)
+
+    t.deepEqual(secondMerge, expected)
+    t.end()
+})
+
+test('should respect the disallowOverwrite flag', function(t) {
+    var target = [
+        { key1: { subkey1: 'one', subkey2: 'two' }}
+    ]
+
+    var src = [
+        { '^key1': 1 },
+        { key2: { subkey: 'three' }}
+    ]
+
+    var expected = [
+        { key1: { subkey1: 'one', subkey2: 'two' }, '^key1': 1 },
+        { key2: { subkey: 'three' }}
+    ]
+
+    t.deepEqual(merge(target, src, false), expected)
+    t.end()
+})
